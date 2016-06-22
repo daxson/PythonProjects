@@ -5,50 +5,30 @@
 # By: Daniel Axson
 #
 
-
+import re
 import os
 
-rootdir = os.cwd()
+'''
+rootdir is the directory that the script will begin reading from
 
-serverPath = "\\\\wjeaus\\projects"
+Note: When adding in a path, excape all backslashes (\) by adding another backslash in front of it.
+'''
 
-def checkfiletype(mySTR):
-    filetypelist = [".JPG", ".jpg", ".AVI", "s.db", ".mp4", ".ini"]
-    if mySTR[-4:] in filetypelist:
-        return False
-    else:
-        return True
+rootdir = os.getcwd() # os.getcwd() gets the directory that the .py file is located
 
+'''
+ownerdict provides a way to translate initials into a pid for an individual
+'''
 ownerdict = {'DPA': 'daxson', 'MPC': 'mcarlton', 'EJM': 'emurray', 'ADG': 'agelsone', 'BSB': 'bboaz', 'JTR': 'jrussell'}
 
-with open("directoryList.csv","w") as f:
-    for photodir in os.listdir(rootdir):
-        #print(photodir)
-        try:
-            if photodir.find("2016") != -1 or photodir.find("2015") != -1:
-                if checkfiletype(photodir) == True:
-                    print(os.path.join(serverPath,os.path.join(rootdir,photodir)[2:]), end=', ')
-                    print(photodir[-3:], end=', ')
-                    ownerini = photodir[-3:]
-                    if photodir[-3:] in ownerdict:
-                        ownerpid = ownerdict[photodir[-3:]]
-                    else:
-                        ownerpid = ''
-                    print(ownerpid)
-                    f.write(os.path.join(serverPath,os.path.join(rootdir,photodir)[2:] +
-                                         ', ' + ownerini + ', ' + ownerpid + "\n"))
-                for subdir in os.listdir(os.path.join(rootdir,photodir)):
-                    try:
-                        #if subdir.find(".JPG") == -1:
-                        if checkfiletype(subdir) == True:
-                            print(os.path.join(serverPath, os.path.join(rootdir, os.path.join(photodir, subdir))[2:]), end=', ')
-                            print(subdir, end=', ')
-                            print(ownerini, end=', ')
-                            print(ownerpid)
-                            f.write(os.path.join(serverPath,os.path.join(rootdir, os.path.join(photodir, subdir))[2:] +
-                                                 ', ' + ownerini + ', ' + ownerpid + "\n"))
-                    except:
-                        pass
-        except:
-            pass
+# remember to escape characters as needed, separate all patterns with | character
+file_patterns = re.compile('.jpg|.JPG') # File patterns to include in search
+dir_patterns_includes = re.compile('2015|2016') # Directory patterns to specifically include in search
+dir_patterns_excludes = re.compile('_iPad|\[Originals\]') # Directory patterns to exclude from search
+
+for dirs, subdirs, files in os.walk(rootdir):
+    if re.search(dir_patterns_includes, dirs) and not re.search(dir_patterns_excludes, dirs):
+        for file in files:
+            if re.search(file_patterns, file):
+                print(os.path.join(dirs, file))
 
